@@ -1,12 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Context } from '@deepseek-ai/cordis';
-import { mkdtempSync, mkdirSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, rmSync, realpathSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { HarnessError } from '@deepseek-ai/dsh-error';
 import Provider, { MxcUnsupportedPolicyError } from '../lib/index.js';
-const base = mkdtempSync(join(tmpdir(),'dsh-mxc-provider-'));
+// Windows CI may expose TEMP as RUNNER~1; DSH correctly rejects aliased grants.
+// Canonicalize the created fixture, never weaken production root validation.
+const base = realpathSync.native(mkdtempSync(join(tmpdir(),'dsh-mxc-provider-')));
 const workspace = join(base,'workspace'); const extra = join(base,'extra');
 mkdirSync(workspace);mkdirSync(extra);
 test.after(()=>rmSync(base,{recursive:true,force:true}));
@@ -18,6 +20,11 @@ function setup(status=0) {
   provider.internals={ platform:'win32', probe:()=>{probes++;return {status};} };
   return {provider,probes:()=>probes};
 }
+test('provider fixture uses physical roots required by DSH authorization',()=>{
+  for (const root of [base,workspace,extra]) {
+    assert.equal(root,realpathSync.native(root));
+  }
+});
 test('passes policy additionalWritableRoots and caches only successful probe',async()=>{
   const {provider,probes}=setup();
   const result=await provider.confine(['node.exe','--version'],{mode:'workspace-write',workspaceRoot:workspace,additionalWritableRoots:[extra]});
