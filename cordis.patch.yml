@@ -1,0 +1,11 @@
+# A patch name is an assertion, NOT a rename. Disable the base ACL provider
+# and insert one MXC provider. Removing this bundle restores the base layer.
+# Consumers dynamically inject the same sandbox service; modes are unchanged.
+- id: sandbox
+  name: '@deepseek-ai/dsh-sandbox-local'
+  disabled: true
+- insert:
+    - id: sandbox-mxc
+      name: dsh-sandbox-mxc
+      config:
+        probeTimeoutMs: 15000

@@ -1,0 +1,31 @@
+# Dependencies and package-manager caches
+node_modules/
+.pnpm-store/
+
+# Build/release artifacts (publish through GitHub Releases, not Git history)
+dist/
+*.tgz
+*.zip
+coverage/
+
+# Local native-test output and diagnostics
+integration-result.json
+control-integration-result.json
+*-results.txt
+*.log
+# Local-only DSH archive inspection helper; not part of the public plugin
+scripts/inspect-runtime.mjs
+
+# Credentials and machine/editor state
+.env
+.env.*
+!.env.example
+.npmrc.local
+*.pem
+*.key
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+__pycache__/
+*.py[cod]

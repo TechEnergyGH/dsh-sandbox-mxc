@@ -1,0 +1,40 @@
+name: Source regression
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-tests:
+    name: Windows / Node 24 source tests (not native PSEC)
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.28.5
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.21.0
+          cache: pnpm
+      - name: Install locked dependencies without lifecycle scripts
+        run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Run source and control-bridge regression tests
+        run: pnpm test
+      - name: Pack install and source archives
+        shell: pwsh
+        run: |
+          pnpm run pack:plugin
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python scripts/pack-source.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python scripts/verify-archives.py
+          exit $LASTEXITCODE
+      # Native PSEC availability and real Desktop activation are manual gates.
+      # Do not run or claim native integration tests on an unqualified CI host.
