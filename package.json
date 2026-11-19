@@ -1,6 +1,6 @@
 {
   "name": "dsh-sandbox-mxc",
-  "version": "0.2.0-local.5",
+  "version": "0.2.2-rc.5",
   "private": true,
   "packageManager": "pnpm@11.28.5",
   "type": "module",

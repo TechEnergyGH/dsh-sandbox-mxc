@@ -21,7 +21,7 @@ test('removing the bundle restores original sandbox without touching permission 
 });
 test('manifest pins reviewed rc.5 DSH dependencies and SDK and packages the bundle patch',()=>{
   const manifest=JSON.parse(readFileSync(new URL('../package.json',import.meta.url),'utf8'));
-  assert.equal(manifest.version,'0.2.0-local.5');
+  assert.equal(manifest.version,manifest.engines.dsh);
   assert.equal(manifest.engines.node,'>=24.9.0');
   assert.equal(manifest.engines.dsh,'0.2.2-rc.5');
   assert.equal(manifest.peerDependencies['@deepseek-ai/dsh-sandbox'],'0.2.2-rc.5');

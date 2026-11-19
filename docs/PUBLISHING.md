@@ -17,7 +17,7 @@ git push -u origin main
 
 ## 构建发布附件
 
-当前附件版本为 `0.2.0-local.5`，精确目标 DSH `0.2.2-rc.5`、Microsoft MXC SDK `1.0.1`。要求 Windows、Node >=24.9.0、pnpm 11.28.5；源码 ZIP 和归档校验另需 Python 3。
+当前插件包及附件版本为 `0.2.2-rc.5`，与精确适配的 DSH 版本一致；Microsoft MXC SDK 保持 `1.0.1`。此命名由历史 `0.2.0-local.5` 调整而来，不改变 engine、DSH 依赖或原生运行逻辑。旧 local.5 归档、提交和验证记录保留，不覆盖或重写；本地旧标签 `v0.2.0-local.5` 移除，新发行标签统一为 `v0.2.2-rc.5`，远程标签变更另行处理；新包版本不能仅因更名就宣称原生已独立重测。要求 Windows、Node >=24.9.0、pnpm 11.28.5；源码 ZIP 和归档校验另需 Python 3。
 
 以下命令是待执行的发布检查流程，不代表当前版本已经通过全部检查；如实记录结果到 [测试记录](../TEST-RESULTS.md)。旧版 rc.3 的 34 项源码回归通过不能充作 rc.5 证据；核心五包 39 个实现源码一致也不能代替原生 PSEC、独立 runner 依赖闭包及真实 Desktop 验收。打包和测试不会自动安装或启用 profile。
 
@@ -34,18 +34,18 @@ pnpm run verify:release
 
 生成于 `dist/`：
 
-- `dsh-sandbox-mxc-0.2.0-local.5.tgz`：面向 DSH `0.2.2-rc.5` 的插件管理器安装包。
-- `dsh-sandbox-mxc-0.2.0-local.5-source.zip`：源码、锁文件、测试与文档，不含依赖/诊断输出。
+- `dsh-sandbox-mxc-0.2.2-rc.5.tgz`：面向 DSH `0.2.2-rc.5` 的插件管理器安装包。
+- `dsh-sandbox-mxc-0.2.2-rc.5-source.zip`：源码、锁文件、测试与文档，不含依赖/诊断输出。
 
 `verify:release` 校验包清单、源码字节、路径安全、依赖版本和 SHA-256；不会安装插件、修改 profile 或宿主 ACL。归档脚本拒绝覆盖已经存在的同版本源码 ZIP；重打时先确认旧文件位置，再手动归档或移除旧 ZIP。
 
 ## 创建 Release
 
-确认待发布提交及测试结果后创建版本 tag（不要覆盖已发布 tag）：
+确认待发布提交及测试结果后创建附注版本 tag `v0.2.2-rc.5`，并确认其指向提交的插件包版本为 `0.2.2-rc.5`。旧命名的本地 `v0.2.0-local.5` 标签已移除；删除本地标签不会删除 GitHub 上的同名远程标签。不要覆盖已经发布的新版本 tag，示例命令也不表示已推送远程：
 
 ```powershell
-git tag v0.2.0-local.5
-git push origin v0.2.0-local.5
+git tag -a v0.2.2-rc.5 -m "MXC sandbox 0.2.2-rc.5 for DSH 0.2.2-rc.5"
+git push origin v0.2.2-rc.5
 ```
 
 在 GitHub Releases 创建 **Pre-release**，上传 `.tgz` 和源码 `.zip`，附上校验输出中的 SHA-256。GitHub 自动生成的 source archive 不能替代插件安装包。
@@ -58,13 +58,13 @@ git push origin v0.2.0-local.5
 | --- | --- |
 | `github:TechEnergyGH/dsh-sandbox-mxc` | 使用远程默认分支当时的提交；默认分支可以不是 `main` |
 | `github:TechEnergyGH/dsh-sandbox-mxc#main` | 使用明确指定的远程 `main` 分支 |
-| `github:TechEnergyGH/dsh-sandbox-mxc#v0.2.0-local.5` | 必须先创建并推送这个 tag；不自动选择最新 Release |
+| `github:TechEnergyGH/dsh-sandbox-mxc#v0.2.2-rc.5` | 必须先创建并推送这个 tag；不自动选择最新 Release |
 | `github:TechEnergyGH/dsh-sandbox-mxc#<40-character-commit-sha>` | 替换成远程已有的完整 40 位提交 SHA；适合固定安装来源 |
 
 创建并推送 tag 后，可向用户提供：
 
 ```powershell
-dsh plugin --profile <your-profile> add "github:TechEnergyGH/dsh-sandbox-mxc#v0.2.0-local.5"
+dsh plugin --profile <your-profile> add "github:TechEnergyGH/dsh-sandbox-mxc#v0.2.2-rc.5"
 ```
 
 不要移动已经发布的 tag 来替换内容。默认分支和指定分支适合开发试用，固定 tag 或完整提交 SHA 更适合版本分发；安装后的副本不会因后续 GitHub 提交自动更新。每个安装来源仍须满足宿主的 DSH engine、Node 和平台要求，不能用版本豁免跳过适配。

@@ -43,6 +43,7 @@ test('unsupported modes use the local HarnessError without the removed sandbox e
 
 test('the real DSH version gate accepts only the reviewed rc.5 runtime', () => {
   assert.equal(manifest.engines.dsh, DSH_VERSION);
+  assert.equal(manifest.version, DSH_VERSION);
   assert.equal(evaluatePluginCompatibility(manifest, {}, DSH_VERSION), undefined);
 
   for (const runtimeVersion of ['0.2.2-rc.1', '0.2.2-rc.3', '0.2.2-rc.4', '0.2.2-rc.6', '0.2.2']) {

@@ -45,6 +45,7 @@ with tarfile.open(tgz, 'r:gz') as archive:
     assert manifest == expected, 'packed manifest must preserve source fields'
     assert manifest['private'] is True
     assert manifest['engines']['dsh'] == '0.2.2-rc.5'
+    assert manifest['version'] == manifest['engines']['dsh'], 'plugin version must follow the reviewed DSH version'
     assert manifest['engines']['node'] == '>=24.9.0'
     for section in ['dependencies', 'peerDependencies', 'devDependencies']:
         for name, pin in manifest.get(section, {}).items():

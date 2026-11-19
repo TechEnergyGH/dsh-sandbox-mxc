@@ -1,6 +1,16 @@
 # 本机验证记录
 
-## local.5 / DSH rc.5 适配 — 2026-11-19
+## 0.2.2-rc.5 版本同号调整 — 2026-11-19
+
+当前源码包版本改为 `0.2.2-rc.5`，与 `engines.dsh` 的精确适配版本一致；此前的 `0.2.0-local.5` 及其原生验收记录保留在下面的历史章节。此调整不修改 `lib/` 运行时代码、DSH 依赖、锁文件或 Microsoft MXC SDK `1.0.1`。
+
+- 在当前 `workspace-write` 会话中使用 Standalone Node `24.21.0` 运行标准 Node test：**36 通过、0 失败、0 跳过**。
+- bundle 和兼容性测试增加 `version === engines.dsh === 0.2.2-rc.5` 约束；归档验证器同样要求插件版本与适配 DSH 版本一致。
+- 新版归档名称为 `dsh-sandbox-mxc-0.2.2-rc.5.tgz` 和 `dsh-sandbox-mxc-0.2.2-rc.5-source.zip`，由发布脚本检查清单、版本、路径和源码字节。
+- 此次未重新执行原生 MXC/PSEC 集成测试、GitHub 安装或新命名版本的 Desktop 在线安装验收，不把历史 local.5 结果改写为新包的独立验收结果。
+- 当前已安装的 Desktop 插件不因源码版本调整而自动改变；旧命名的本地 `v0.2.0-local.5` tag 移除，新发行标签使用 `v0.2.2-rc.5`；旧提交和验证记录不改写，远程发布另行执行。
+
+## 历史：local.5 / DSH rc.5 适配 — 2026-11-19
 
 插件：`0.2.0-local.5`。目标 DSH：精确 `0.2.2-rc.5`。验证环境：Windows x64、Standalone Node `24.21.0`、实际 Desktop Electron `44.7.0` / 内嵌 Node `24.21.0`、MXC SDK `1.0.1`。本节与下面的 local.4 / rc.3 历史记录分开，不继承旧版通过结论。
 

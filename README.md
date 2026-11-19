@@ -4,7 +4,7 @@
 
 **核心目标：限制受限命令的文件写入，不修改宿主 ACL 或 Low 完整性标签；原生能力不足时直接拒绝，不自动降级。**
 
-> 当前版本：`0.2.0-local.5`，实验性实现。不是 DeepSeek 或 Microsoft 官方插件，也不是 bitsmug 发布的同名 npm 包或 omdsh-dev 的 scoped 包。本项目保持 `private: true`，用于从源码打包、安装或发布 GitHub Release，不会通过 `pnpm publish` 覆盖公开同名包。
+> 当前版本：`0.2.2-rc.5`，与适配的 DSH 版本一致，实验性实现。不是 DeepSeek 或 Microsoft 官方插件，也不是 bitsmug 发布的同名 npm 包或 omdsh-dev 的 scoped 包。本项目保持 `private: true`，用于从源码打包、安装或发布 GitHub Release，不会通过 `pnpm publish` 覆盖公开同名包。
 
 ## 环境要求
 
@@ -18,7 +18,7 @@
 
 Windows 支持情况以运行时功能探测为准，不能仅依据 Windows 版本号。管理员权限不是设计前提；不要用提权或版本豁免掩盖探测、依赖或兼容性问题。
 
-`local.5` 将 DSH engine、peer、runner 直接依赖及开发依赖固定到 rc.5，SDK 仍为 `1.0.1`。适配审查中，rc.3 与 rc.5 的 sandbox、error、subprocess、win32-process、app-boot 五个核心包共 39 个实现源文件逐字节一致；这不等于传递依赖、原生行为或 profile 激活已通过验收。rc.5 正常版本门禁会拒绝旧版 `local.4` 的 rc.3 声明，应使用适配版本，不申请版本豁免。历史 `local.4` / rc.3 及 `local.2` / rc.1 的记录保留在 [版本记录](CHANGELOG.md) 和 [测试记录](TEST-RESULTS.md)。
+当前插件包版本号跟随适配的 DSH 版本：两者均为 `0.2.2-rc.5`。历史 `0.2.0-local.5` 已将 engine、peer、runner 直接依赖及开发依赖固定到 rc.5；本次仅调整包版本命名，原生运行逻辑及 SDK `1.0.1` 不变。旧 local.5 提交和验证记录保留，不改写历史；发行标签改用 `v0.2.2-rc.5`，旧命名的本地标签移除；更名不表示新包版本已独立重跑原生验收。历史适配审查中，rc.3 与 rc.5 的 sandbox、error、subprocess、win32-process、app-boot 五个核心包共 39 个实现源文件逐字节一致；这不等于传递依赖、原生行为或 profile 激活已通过验收。rc.5 正常版本门禁会拒绝旧版 `local.4` 的 rc.3 声明，应使用适配版本，不申请版本豁免。各历史版本的记录保留在 [版本记录](CHANGELOG.md) 和 [测试记录](TEST-RESULTS.md)。
 
 ## 安全与权限语义
 
@@ -46,7 +46,7 @@ pnpm test
 pnpm run pack:plugin
 ```
 
-安装包生成到 `dist/dsh-sandbox-mxc-0.2.0-local.5.tgz`。项目没有构建步骤：`lib/` 中的 JavaScript 就是直接维护的源码。上述安装依赖、测试和打包命令不会将插件自动安装或启用到任何 DSH profile；安装和启用须由用户明确执行。
+安装包生成到 `dist/dsh-sandbox-mxc-0.2.2-rc.5.tgz`。项目没有构建步骤：`lib/` 中的 JavaScript 就是直接维护的源码。上述安装依赖、测试和打包命令不会将插件自动安装或启用到任何 DSH profile；安装和启用须由用户明确执行。
 
 ### Desktop profile
 
@@ -88,7 +88,7 @@ dsh plugin --profile <your-profile> add "github:TechEnergyGH/dsh-sandbox-mxc#mai
 #### GitHub 固定 tag
 
 ```powershell
-dsh plugin --profile <your-profile> add "github:TechEnergyGH/dsh-sandbox-mxc#v0.2.0-local.5"
+dsh plugin --profile <your-profile> add "github:TechEnergyGH/dsh-sandbox-mxc#v0.2.2-rc.5"
 ```
 
 此形式的前提是维护者已经创建并推送该 tag；不能只在本地创建，也不要假设示例 tag 已存在。选择与宿主 DSH 版本相符的 tag，不用版本豁免绕过兼容性检查。
@@ -122,7 +122,7 @@ pnpm run test:control
 - `probe`：探测并启动一次原生 MXC 目标，不满足条件则退出失败。
 - 两组集成测试：在新建临时工作区验证文件策略、ACL 前后不变、fd7、退出码与 detached 子进程回收。文件测试还需要第二个挂载卷，以及安装在标准位置的 PowerShell 7。
 - 原生测试须在能正常启动子进程的宿主终端执行，避免在现有 MXC 容器内嵌套测试；报告生成在仓库根目录，默认不提交。
-- 本次确认：关闭自动 Host peers 的系统盘独立候选包通过 Node/Electron 探测及 11 项原生测试；非系统卷全局 pnpm store 的源码依赖位置曾因 PSEC 创建被拒而失败。依赖部署位置/权限仍是环境前提，不能用源码回归成功掩盖原生失败，详见测试记录。
+- 历史 local.5 记录确认：关闭自动 Host peers 的系统盘独立候选包通过 Node/Electron 探测及 11 项原生测试；非系统卷全局 pnpm store 的源码依赖位置曾因 PSEC 创建被拒而失败。这不是更名后 `0.2.2-rc.5` 包版本已独立重测的证明。依赖部署位置/权限仍是环境前提，不能用源码回归成功掩盖原生失败，详见测试记录。
 
 安装后的在线验收也不可省略：创建 `workspace-write` 会话，执行一次受限命令，检查日志出现：
 
