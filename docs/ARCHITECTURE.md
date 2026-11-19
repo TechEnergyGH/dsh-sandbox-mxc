@@ -23,6 +23,14 @@ DSH 消费方（逐调用权限策略）
 | `lib/control.js` | 经过认证的 loopback fd7 控制桥、目标启动确认、最终数据 drain |
 | `lib/win32.js` | Windows 命令行参数转义 |
 
+## rc.5 适配边界
+
+`0.2.0-local.5` 精确面向 DSH `0.2.2-rc.5`，更新 DSH engine、peer、独立 runner 直接依赖及开发依赖，Microsoft MXC SDK 继续固定为 `1.0.1`。独立 runner 必须自己声明运行时依赖闭包，不能仅凭 Host provider 能导入就认定子进程依赖完整。
+
+本次审查中，rc.3 与 rc.5 的 sandbox、error、subprocess、win32-process、app-boot 五个核心包共 39 个实现源码逐字节一致，未发现这些接口需要核心运行逻辑迁移。但源码一致不能证明传递依赖、原生 ABI、文件策略或进程清理行为完全兼容。按新版实际回归、原生集成和在线激活分别验收，结果见 [测试记录](../TEST-RESULTS.md)；旧版 rc.3 的 34 项源码回归通过不自动延续到 rc.5。
+
+安装、启用及 profile 重载/重启必须由用户明确执行，不是构建或测试的副作用。旧版 `local.4` 的 rc.3 engine 声明会被 rc.5 的正常版本门禁拒绝，不使用版本豁免绕过这一边界。
+
 ## 不可放宽的约束
 
 1. 仅接受 `read-only` / `workspace-write`。完全权限由 DSH 消费方显式处理。
@@ -51,8 +59,8 @@ DSH fd7 双向管道通过宿主 loopback TCP 桥连接到容器内 bootstrap，
 
 - 允许广泛宿主读取和网络访问，不治理机密读取或网络外传。
 - 不保证硬链接别名安全，不承诺所有 Win32/注册表/DLL/命名管道工具兼容。
-- 现有验证包括前台完成后的 detached 回收，不等同于已完成宿主崩溃、runner 崩溃等所有生命周期组合的原生验证。
+- 历史 rc.3 验证包括前台完成后的 detached 回收，不等同于 rc.5 已通过原生测试，也不等同于已完成宿主崩溃、runner 崩溃等所有生命周期组合的原生验证。
 - 没有注入 Node 子进程 API shim，也没有将受限目标移到宿主执行。
-- Windows x64 / DSH rc.3 的本机结果不能推广到其他系统、架构或 DSH 版本。
+- Windows x64 / DSH rc.3 的历史本机结果不能推广到当前 rc.5、其他系统或架构；当前版本的已验证组合以测试记录为准。
 
 详细本机验证见 [测试记录](../TEST-RESULTS.md)，来源和许可证见 [NOTICE](../NOTICE.md)。

@@ -14,7 +14,7 @@ test('the independent runner pins its runtime dependency closure directly', () =
     '@deepseek-ai/dsh-subprocess',
     '@deepseek-ai/dsh-win32-process',
   ]) {
-    assert.equal(manifest.dependencies?.[name], '0.2.2-rc.3', `direct dependency ${name}`);
+    assert.equal(manifest.dependencies?.[name], '0.2.2-rc.5', `direct dependency ${name}`);
   }
   assert.equal(manifest.dependencies?.['@microsoft/mxc-sdk'], '1.0.1');
 });

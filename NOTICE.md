@@ -12,4 +12,8 @@ This independent package changes the provider integration, carries explicit addi
 
 Microsoft's `@microsoft/mxc-sdk` is a separate dependency, pinned to 1.0.1. It and DSH dependencies retain their own licenses. They are downloaded by the package manager, not copied into this package.
 
-The original local.2 checkpoint targeted DSH `0.2.2-rc.1`. The local.3 migration targeted DSH `0.2.2-rc.3`; local.4 fixes its independent runner's missing error-module dependency in the actual Desktop profile. See [TEST-RESULTS.md](./TEST-RESULTS.md) for the precise validation scope. Application files, system services and ACL configuration are not modified by this package; profile installation is an explicit user-controlled Plugin Manager operation.
+The original local.2 checkpoint targeted DSH `0.2.2-rc.1`. The local.3 migration targeted DSH `0.2.2-rc.3`; local.4 fixes its independent runner's missing error-module dependency in the actual Desktop profile. These remain historical checkpoints.
+
+The local.5 migration targets DSH `0.2.2-rc.5` with updated exact DSH dependency pins and the unchanged MXC SDK `1.0.1`. Its compatibility review found 39 byte-identical implementation source files across the sandbox, error, subprocess, win32-process and app-boot packages between rc.3 and rc.5. That comparison is not native execution or Desktop activation evidence. See [TEST-RESULTS.md](./TEST-RESULTS.md) for the precise version-specific validation scope.
+
+Application files, system services and ACL configuration are not modified by this package; profile installation and activation are explicit user-controlled Plugin Manager operations, never automatic effects of building or testing. Version exemptions are not used as a substitute for migration and verification.

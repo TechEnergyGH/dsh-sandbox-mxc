@@ -1,4 +1,78 @@
-# 本机验证记录：local.4 Desktop runner 修复
+# 本机验证记录
+
+## local.5 / DSH rc.5 适配 — 2026-11-19
+
+插件：`0.2.0-local.5`。目标 DSH：精确 `0.2.2-rc.5`。验证环境：Windows x64、Standalone Node `24.21.0`、实际 Desktop Electron `44.7.0` / 内嵌 Node `24.21.0`、MXC SDK `1.0.1`。本节与下面的 local.4 / rc.3 历史记录分开，不继承旧版通过结论。
+
+### 适配范围
+
+- 更新 engine、sandbox peer、error/subprocess/win32-process 直接依赖及 app-boot 开发依赖到 rc.5，由 pnpm 重新生成锁文件；保留 SDK `1.0.1`。
+- rc.3 与实际 rc.5 的 sandbox、error、subprocess、win32-process、app-boot 五包共 39 个实现源码逐字节一致；未发现需要修改核心执行逻辑的接口变化。
+- `lib/` 的 provider、runner、策略和控制桥保持不变。独立 runner 的直接依赖闭包没有退回仅声明 Host peers。
+- 不扩大兼容版本范围、不授予 DSH 版本豁免、不修改 profile 或会话默认权限。
+- pnpm 11 新生成的 `pnpm-workspace.yaml` 仅列出本次 21 个精确 rc.5 DSH 包的发布时龄例外，随源码 ZIP 保存；这不是 DSH 版本豁免，也不关闭包完整性校验或普遍放行新依赖。
+
+### 源码回归：36 项通过
+
+使用仓库实际安装的 rc.5 依赖运行标准 Node test：**36 通过、0 失败、0 跳过**。
+
+包括原有策略、provider、bundle、控制桥和独立导入测试，并增加：
+
+- rc.5 版本门禁接受新版，拒绝 rc.1、rc.3、rc.4、未经验证的 rc.6 和稳定版 0.2.2。
+- 旧 local.4 的 rc.3 engine 在 rc.5 下明确被拒绝，不能悄悄豁免。
+- 锁文件中所有 DSH 包身份均为 rc.5，实际接口包和独立 runner 的直接依赖版本一致。
+- 源码归档保留 pnpm 发布时龄策略，例外仅允许精确 rc.5 包身份。
+
+源码回归不是原生容器验收。`pnpm test` 是复现入口。
+
+### 独立候选包：关闭自动 Host peers 后通过
+
+在干净的系统盘临时目录，仅声明本次候选 `.tgz`，安装禁用构建脚本和自动 peers。明确确认从插件位置不能解析 `@deepseek-ai/cordis` 和 `@deepseek-ai/dsh-sandbox`，但：
+
+1. runner 导入成功。
+2. 清除 Host resolver/loader 环境后，Standalone Node 完整 `runner --probe` 退出 0。
+3. 实际 Desktop Electron（`ELECTRON_RUN_AS_NODE=1`）完整 `runner --probe` 退出 0。
+
+不是仅运行 SDK raw probe；原生目标实际启动。最终发布包和源码 ZIP还由归档验证器检查清单、固定依赖、源码字节和路径安全，SHA-256 由 `verify:release` 输出，不在归档内部重复嵌入自身哈希。
+
+### Desktop Electron + 独立候选包原生文件策略：7 项通过
+
+使用候选包的 runner，在新建临时工作区运行目标，结果：
+
+| 验证 | 结果 |
+| --- | --- |
+| 工作区与本次显式授权额外目录写入 | 通过 |
+| 未授权区外写入 | 被拒绝，目标未创建 |
+| read-only 工作区和额外目录写入 | 被拒绝 |
+| 跨卷目录枚举及空格/尾反斜杠参数 | 通过 |
+| PowerShell 写入和 Remove-Item 清理 | 通过 |
+| 工作区与既有文件 ACL/完整性标签前后比较 | 完全不变 |
+| 普通非零退出码 42 镜像 | 通过 |
+
+### Desktop Electron + 独立候选包原生控制/生命周期：4 项通过
+
+- 原生 fd7 双向通信、最终数据完整保留与桥凭据移除。
+- 启动后立即输出 20KB 控制数据并退出，字节完整收到。
+- 完整 DWORD `0xf1234567` 退出码镜像。
+- detached 子进程随前台目标结束被回收。
+
+两组原生测试宿主在完全权限下运行，**实际测试目标仍在 MXC/PSEC 中**。测试仅写入独立临时工作区，不改 ACL、系统服务或 profile。
+
+### 本次发现的依赖位置边界
+
+新依赖在非系统卷的全局 pnpm store 位置执行时，原生执行器创建 PSEC 失败：`CreateProcessSecurityEnvironment failed (HRESULT = 0x80070005)`；runner 返回 127，目标未成功启动，保持拒绝执行。相同宿主和新建临时工作目录下，旧已安装 local.4 探测成功；同一 local.5 候选包独立安装到系统盘临时目录后，Node/Electron 探测及上述 11 项原生测试全部成功。
+
+只读比较确认新旧 runner/策略/控制桥及 SDK x64 的 14 个二进制文件逐字节相同，执行器均有有效 Microsoft 签名；依赖目录的继承权限不同。**这支持依赖部署位置/权限是调查方向，但未证明某条权限项的因果，不能宣称任意位置都兼容。** 本次没有修复这些目录权限、复制执行器绕过限制、开启 ACL augmentation 或进行未授权重试。不要把源码目录中失败的原生测试改记为通过；这里的原生通过结论只属于上述独立候选包部署组合。
+
+### 上线与安全边界
+
+- 未安装或启用到实际 Desktop profile；在线 fiber、bundle 应用状态及新会话中的受限命令仍须安装后单独验收。候选包成功不等于当前 GUI 已启用 MXC。
+- 未验证宿主/runner 崩溃、所有取消组合、其他 Windows/ARM64、其他 DSH 版本或真实 Cargo/Bun/Tauri 完整构建。
+- 保持 `enforcement: partial`；不保证机密读取隔离、硬链接别名安全或网络隔离。
+- 目标执行后的 drain/Job/temp 清理失败不能证明目标未执行，有副作用命令不能自动重跑。
+- 不恢复历史 Low 标签；移除本 bundle 后默认 ACL 后端可能再次写标签。
+
+## 历史：local.4 Desktop runner 修复
 
 日期：2026-11-16（Asia/Shanghai）。插件：`0.2.0-local.4`，目标宿主：`DSH 0.2.2-rc.3`。
 

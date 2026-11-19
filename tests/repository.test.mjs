@@ -43,6 +43,14 @@ test('package includes every root and docs Markdown file used by public document
 test('repository stays private to npm and exposes reproducible release commands', () => {
   assert.equal(manifest.private, true);
   assert.equal(manifest.packageManager, 'pnpm@11.28.5');
+  const sourcePacker = readFileSync(join(root, 'scripts', 'pack-source.py'), 'utf8');
+  assert.ok(sourcePacker.includes("'pnpm-workspace.yaml'"), 'source archive must retain pnpm release-age policy');
+  const policy = readFileSync(join(root, 'pnpm-workspace.yaml'), 'utf8');
+  const exceptions = [...policy.matchAll(/^\s*- '([^']+)'$/gm)].map(match => match[1]);
+  assert.equal(exceptions.length, 21, 'only the reviewed DSH package family is excluded from the release-age delay');
+  for (const identity of exceptions) {
+    assert.match(identity, /^@deepseek-ai\/dsh-[\w-]+@0\.2\.2-rc\.5$/, identity);
+  }
   for (const name of ['test:control', 'pack:plugin', 'pack:source', 'verify:release']) {
     assert.equal(typeof manifest.scripts[name], 'string', name);
   }

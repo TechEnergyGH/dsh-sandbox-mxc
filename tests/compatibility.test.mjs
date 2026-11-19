@@ -10,7 +10,7 @@ import * as win32 from '@deepseek-ai/dsh-win32-process';
 import Provider, { MxcSandboxProvider, MxcUnsupportedPolicyError } from '../lib/index.js';
 import { confinedArgv, FAILURE_EXIT, FAILURE_SIGNATURE } from '../lib/policy.js';
 
-const DSH_VERSION = '0.2.2-rc.3';
+const DSH_VERSION = '0.2.2-rc.5';
 const manifest = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
 
 // These are seam regressions, not native PSEC capability tests. They neither
@@ -21,7 +21,7 @@ function mxcMetadata() {
   });
 }
 
-test('rc.3 imports the real MXC provider and preserves SandboxProvider inheritance', () => {
+test('rc.5 imports the real MXC provider and preserves SandboxProvider inheritance', () => {
   assert.equal(Provider, MxcSandboxProvider);
   assert.ok(Provider.prototype instanceof SandboxProvider);
   assert.ok(new Provider(new Context()) instanceof SandboxProvider);
@@ -41,20 +41,35 @@ test('unsupported modes use the local HarnessError without the removed sandbox e
     && rejected.code === 'SANDBOX_UNSUPPORTED_POLICY');
 });
 
-test('the real DSH version gate accepts the manifest on rc.3 and rejects rc.1', () => {
+test('the real DSH version gate accepts only the reviewed rc.5 runtime', () => {
   assert.equal(manifest.engines.dsh, DSH_VERSION);
   assert.equal(evaluatePluginCompatibility(manifest, {}, DSH_VERSION), undefined);
 
-  const issue = evaluatePluginCompatibility(manifest, {}, '0.2.2-rc.1');
-  assert.ok(issue, 'the rc.3-only manifest must reject rc.1 without an exemption');
+  for (const runtimeVersion of ['0.2.2-rc.1', '0.2.2-rc.3', '0.2.2-rc.4', '0.2.2-rc.6', '0.2.2']) {
+    const issue = evaluatePluginCompatibility(manifest, {}, runtimeVersion);
+    assert.ok(issue, `the rc.5-only manifest must reject ${runtimeVersion} without an exemption`);
+    assert.equal(issue.name, manifest.name);
+    assert.equal(issue.version, manifest.version);
+    assert.equal(issue.runtimeVersion, runtimeVersion);
+    assert.deepEqual(issue.requirements, { 'engines.dsh': DSH_VERSION });
+    assert.equal(issue.exempted, false);
+  }
+});
+
+test('rc.5 rejects the previous local.4 manifest rather than silently granting an exemption', () => {
+  const previous = {
+    ...manifest, version: '0.2.0-local.4',
+    engines: { ...manifest.engines, dsh: '0.2.2-rc.3' },
+  };
+  const issue = evaluatePluginCompatibility(previous, {}, DSH_VERSION);
   assert.equal(issue.name, manifest.name);
-  assert.equal(issue.version, manifest.version);
-  assert.equal(issue.runtimeVersion, '0.2.2-rc.1');
-  assert.deepEqual(issue.requirements, { 'engines.dsh': DSH_VERSION });
+  assert.equal(issue.version, previous.version);
+  assert.equal(issue.runtimeVersion, DSH_VERSION);
+  assert.deepEqual(issue.requirements, { 'engines.dsh': '0.2.2-rc.3' });
   assert.equal(issue.exempted, false);
 });
 
-test('DSH manifest pins and the installed seam packages all target rc.3', () => {
+test('DSH manifest pins and the installed seam packages all target rc.5', () => {
   for (const group of ['dependencies', 'peerDependencies', 'devDependencies']) {
     for (const [name, version] of Object.entries(manifest[group] ?? {})) {
       if (name === '@deepseek-ai/dsh' || name.startsWith('@deepseek-ai/dsh-')) {
@@ -72,7 +87,19 @@ test('DSH manifest pins and the installed seam packages all target rc.3', () => 
   }
 });
 
-test('rc.3 retains the six native runner exports and inherited fd7 contract', () => {
+test('the regenerated lockfile contains only reviewed rc.5 DSH package identities', () => {
+  const lockfile = readFileSync(new URL('../pnpm-lock.yaml', import.meta.url), 'utf8');
+  const identities = [...lockfile.matchAll(/@deepseek-ai\/dsh-[\w-]+@(\d+\.\d+\.\d+(?:-[\w.]+)?)/g)];
+  assert.ok(identities.length > 0, 'lockfile must resolve real DSH package identities');
+  for (const [identity, version] of identities) {
+    assert.equal(version, DSH_VERSION, identity);
+  }
+  for (const name of ['dsh-sandbox', 'dsh-error', 'dsh-subprocess', 'dsh-win32-process', 'dsh-app-boot']) {
+    assert.ok(lockfile.includes(`@deepseek-ai/${name}@${DSH_VERSION}`), name);
+  }
+});
+
+test('rc.5 retains the six native runner exports and inherited fd7 contract', () => {
   for (const name of [
     'closeHandleChecked', 'isJobEmpty', 'loadWin32ProcessBindings',
     'pollProcessExit', 'spawnCurrentTokenJobProcess', 'terminateJob',
@@ -84,7 +111,7 @@ test('rc.3 retains the six native runner exports and inherited fd7 contract', ()
   assert.equal(typeof openInheritedControlChannel, 'function');
 });
 
-test('rc.3 classifier does not conflate target exit 127 with MXC runner failure', () => {
+test('rc.5 classifier does not conflate target exit 127 with MXC runner failure', () => {
   const { runnerFailureRules, denialSignatures } = mxcMetadata();
   for (const stderr of ['', 'target failed', 'permission denied']) {
     assert.equal(classifyRunnerFailure(FAILURE_EXIT, stderr, runnerFailureRules), undefined);

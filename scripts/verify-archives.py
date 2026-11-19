@@ -44,12 +44,12 @@ with tarfile.open(tgz, 'r:gz') as archive:
     manifest = json.load(archive.extractfile('package/package.json'))
     assert manifest == expected, 'packed manifest must preserve source fields'
     assert manifest['private'] is True
-    assert manifest['engines']['dsh'] == '0.2.2-rc.3'
+    assert manifest['engines']['dsh'] == '0.2.2-rc.5'
     assert manifest['engines']['node'] == '>=24.9.0'
     for section in ['dependencies', 'peerDependencies', 'devDependencies']:
         for name, pin in manifest.get(section, {}).items():
             if name.startswith('@deepseek-ai/dsh-'):
-                assert pin == '0.2.2-rc.3', (name, pin)
+                assert pin == '0.2.2-rc.5', (name, pin)
     assert manifest['dependencies']['@microsoft/mxc-sdk'] == '1.0.1'
 
 spec = spec_from_file_location('pack_source', root / 'scripts' / 'pack-source.py')

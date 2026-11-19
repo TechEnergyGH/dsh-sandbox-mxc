@@ -17,7 +17,9 @@ git push -u origin main
 
 ## 构建发布附件
 
-要求 Windows、Node >=24.9.0、pnpm 11.28.5；源码 ZIP 和归档校验另需 Python 3。
+当前附件版本为 `0.2.0-local.5`，精确目标 DSH `0.2.2-rc.5`、Microsoft MXC SDK `1.0.1`。要求 Windows、Node >=24.9.0、pnpm 11.28.5；源码 ZIP 和归档校验另需 Python 3。
+
+以下命令是待执行的发布检查流程，不代表当前版本已经通过全部检查；如实记录结果到 [测试记录](../TEST-RESULTS.md)。旧版 rc.3 的 34 项源码回归通过不能充作 rc.5 证据；核心五包 39 个实现源码一致也不能代替原生 PSEC、独立 runner 依赖闭包及真实 Desktop 验收。打包和测试不会自动安装或启用 profile。
 
 ```powershell
 pnpm install --frozen-lockfile --ignore-scripts
@@ -32,8 +34,8 @@ pnpm run verify:release
 
 生成于 `dist/`：
 
-- `dsh-sandbox-mxc-0.2.0-local.4.tgz`：DSH 插件管理器安装包。
-- `dsh-sandbox-mxc-0.2.0-local.4-source.zip`：源码、锁文件、测试与文档，不含依赖/诊断输出。
+- `dsh-sandbox-mxc-0.2.0-local.5.tgz`：面向 DSH `0.2.2-rc.5` 的插件管理器安装包。
+- `dsh-sandbox-mxc-0.2.0-local.5-source.zip`：源码、锁文件、测试与文档，不含依赖/诊断输出。
 
 `verify:release` 校验包清单、源码字节、路径安全、依赖版本和 SHA-256；不会安装插件、修改 profile 或宿主 ACL。归档脚本拒绝覆盖已经存在的同版本源码 ZIP；重打时先确认旧文件位置，再手动归档或移除旧 ZIP。
 
@@ -42,8 +44,8 @@ pnpm run verify:release
 确认待发布提交及测试结果后创建版本 tag（不要覆盖已发布 tag）：
 
 ```powershell
-git tag v0.2.0-local.4
-git push origin v0.2.0-local.4
+git tag v0.2.0-local.5
+git push origin v0.2.0-local.5
 ```
 
 在 GitHub Releases 创建 **Pre-release**，上传 `.tgz` 和源码 `.zip`，附上校验输出中的 SHA-256。GitHub 自动生成的 source archive 不能替代插件安装包。

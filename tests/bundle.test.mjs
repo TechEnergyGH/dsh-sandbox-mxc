@@ -19,17 +19,17 @@ test('removing the bundle restores original sandbox without touching permission 
   assert.equal(entries.some(e=>e.id==='sandbox-mxc'),false);
   assert.equal(patches.some(e=>e.id==='sandbox-policy'||e.id==='approval'),false);
 });
-test('manifest pins reviewed rc.3 DSH dependencies and SDK and packages the bundle patch',()=>{
+test('manifest pins reviewed rc.5 DSH dependencies and SDK and packages the bundle patch',()=>{
   const manifest=JSON.parse(readFileSync(new URL('../package.json',import.meta.url),'utf8'));
-  assert.equal(manifest.version,'0.2.0-local.4');
+  assert.equal(manifest.version,'0.2.0-local.5');
   assert.equal(manifest.engines.node,'>=24.9.0');
-  assert.equal(manifest.engines.dsh,'0.2.2-rc.3');
-  assert.equal(manifest.peerDependencies['@deepseek-ai/dsh-sandbox'],'0.2.2-rc.3');
-  assert.equal(manifest.dependencies['@deepseek-ai/dsh-error'],'0.2.2-rc.3');
-  assert.equal(manifest.devDependencies['@deepseek-ai/dsh-app-boot'],'0.2.2-rc.3');
+  assert.equal(manifest.engines.dsh,'0.2.2-rc.5');
+  assert.equal(manifest.peerDependencies['@deepseek-ai/dsh-sandbox'],'0.2.2-rc.5');
+  assert.equal(manifest.dependencies['@deepseek-ai/dsh-error'],'0.2.2-rc.5');
+  assert.equal(manifest.devDependencies['@deepseek-ai/dsh-app-boot'],'0.2.2-rc.5');
   assert.equal(manifest.dependencies['@microsoft/mxc-sdk'],'1.0.1');
   assert.equal(manifest.dsh.bundle.patch,'./cordis.patch.yml');assert.ok(manifest.files.includes('lib'));
   // A child Node process does not inherit the DSH host's peer resolver.
-  assert.equal(manifest.dependencies['@deepseek-ai/dsh-subprocess'],'0.2.2-rc.3');
-  assert.equal(manifest.dependencies['@deepseek-ai/dsh-win32-process'],'0.2.2-rc.3');
+  assert.equal(manifest.dependencies['@deepseek-ai/dsh-subprocess'],'0.2.2-rc.5');
+  assert.equal(manifest.dependencies['@deepseek-ai/dsh-win32-process'],'0.2.2-rc.5');
 });

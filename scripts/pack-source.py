@@ -4,7 +4,7 @@ from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
 
 ROOT_FILES = [
-    'package.json', 'pnpm-lock.yaml', 'cordis.patch.yml', 'README.md',
+    'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', 'cordis.patch.yml', 'README.md',
     'NOTICE.md', 'LICENSE', 'TEST-RESULTS.md', 'CHANGELOG.md',
     'CONTRIBUTING.md', 'SECURITY.md', '.gitignore', '.gitattributes',
     '.editorconfig', '.npmrc',
