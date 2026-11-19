@@ -34,7 +34,9 @@ Windows 支持情况以运行时功能探测为准，不能仅依据 Windows 版
 
 额外目录请在 **DSH 的正式额外可写目录设置**中授权。本插件没有全局 `extraWritablePaths` 配置，不自行放行 `.cargo`、`.bun` 或 `.rustup`。额外授权目录应是已存在的绝对物理目录，不接受符号链接授权或整卷可写授权。
 
-## 从源码安装
+## 安装
+
+### 本地源码打包
 
 在 Windows PowerShell 中进入本仓库根目录：
 
@@ -49,19 +51,63 @@ pnpm run pack:plugin
 ### Desktop profile
 
 1. 保存工作，结束正在运行的任务。
-2. 使用 **DSH 应用内插件管理器**安装刚生成的本地 `.tgz`，或下载本项目 GitHub Release 的安装包。
-3. 启用 bundle，按管理器实际提示重载或重启。
+2. 使用 **DSH 应用内插件管理器**安装本地 `.tgz`，或输入下面列出的本项目 `github:` 安装地址；也可先下载本项目 GitHub Release 的安装包再安装。
+3. 启用 bundle，按管理器实际提示重载或重启。替换已安装的 provider 后如有旧服务注册冲突，应完全退出并重新打开 Desktop；仅刷新页面不能替代进程重启。
 4. 不要同时启用另一个替换 `sandbox` 服务的插件；不要手改正在运行的 Desktop profile。
 
-**请使用完整本地包路径，不要仅输入 `dsh-sandbox-mxc`，也不要更新到公开注册表里的另一个同名插件。** 已有同名包时先核对来源；切换插件影响该 profile 的其他会话。
+**请使用完整本地包路径或 `github:TechEnergyGH/dsh-sandbox-mxc` 地址，不要仅输入 `dsh-sandbox-mxc`，也不要更新到公开注册表里的另一个同名插件。** 已有同名包时先核对来源；切换插件影响该 profile 的其他会话。
 
-### 独立 CLI profile
+### CLI 安装形式
 
-仅对没有被 Electron 管理、由 CLI 独立管理的 profile 使用：
+下面的 `<your-profile>` 是占位符，执行前替换成实际 profile 名称。**对 `desktop` 使用 CLI 前，先完全退出 DeepSeek Harness Desktop**；运行中的桌面端请使用应用内插件管理器。安装后重新打开对应 profile，再按下面的验证步骤检查是否真正启用。
+
+#### 本地安装包
+
+从本项目 Release 下载 `.tgz`，或使用本地源码打包结果，替换成安装包的绝对路径：
 
 ```powershell
-dsh plugin --profile <你的CLI-profile> add <安装包的绝对路径>
+dsh plugin --profile <your-profile> add "<插件安装包的绝对路径>"
 ```
+
+#### GitHub 默认分支：不加后缀
+
+```powershell
+dsh plugin --profile <your-profile> add "github:TechEnergyGH/dsh-sandbox-mxc"
+```
+
+安装远程仓库**默认分支当时的源码提交**。无需添加后缀；它不代表最新 Release，也不会自动选择与当前 DSH 兼容的 tag。如果默认分支以后面向其他 DSH 版本，重新安装可能被版本门禁拒绝。
+
+#### GitHub 指定分支
+
+```powershell
+dsh plugin --profile <your-profile> add "github:TechEnergyGH/dsh-sandbox-mxc#main"
+```
+
+明确选择远程 `main` 分支，而不是依赖仓库的默认分支设置。分支内容会变化，适合开发试用。
+
+#### GitHub 固定 tag
+
+```powershell
+dsh plugin --profile <your-profile> add "github:TechEnergyGH/dsh-sandbox-mxc#v0.2.0-local.5"
+```
+
+此形式的前提是维护者已经创建并推送该 tag；不能只在本地创建，也不要假设示例 tag 已存在。选择与宿主 DSH 版本相符的 tag，不用版本豁免绕过兼容性检查。
+
+#### GitHub 固定提交 SHA
+
+```powershell
+dsh plugin --profile <your-profile> add "github:TechEnergyGH/dsh-sandbox-mxc#<40-character-commit-sha>"
+```
+
+将占位符替换为远程已有的完整 40 位提交 SHA。固定提交最适合明确安装来源；它固定的是本插件源码，传递依赖仍由安装器解析，不等同于复用本仓库的完整开发锁文件。
+
+### 安装来源与更新注意事项
+
+- 已安装的副本不会随 GitHub 新提交自动更新；再次更新仍须检查版本、依赖和激活结果。
+- `github:` 安装获取仓库源码，不是 Release 的 `.tgz` 附件；本地 `.tgz` 是已打包的安装内容。GitHub 默认生成的源码 ZIP 不是插件安装包。
+- 本项目没有安装时编译 `lib/` 的要求，但 pnpm 可能对 Git 包准备过程或依赖构建脚本提出审批。应核对实际诊断并逐项确认，不要统一放开所有脚本；脚本审批与 DSH 版本兼容是不同机制。
+- `private: true` 仅用于避免误发布到 npm，不阻止通过 GitHub 安装。
+- 已有本地 `.tgz` 的验证结果不能替代 `github:` 下载和包准备链路的验收。本节说明安装形式，不宣称这些 GitHub 安装形式均已实测通过。发布 tag 的操作与前提见 [发布说明](docs/PUBLISHING.md)。
 
 ## 验证
 

@@ -50,6 +50,27 @@ git push origin v0.2.0-local.5
 
 在 GitHub Releases 创建 **Pre-release**，上传 `.tgz` 和源码 `.zip`，附上校验输出中的 SHA-256。GitHub 自动生成的 source archive 不能替代插件安装包。
 
+### GitHub 源码安装地址
+
+本项目的 GitHub 仓库为 `TechEnergyGH/dsh-sandbox-mxc`。仓库根目录包含包清单、bundle patch 及可直接运行的 `lib/`；通过 `github:` 安装时取的是仓库源码，不要求先创建 Release，也不需要从源码 ZIP 安装。`private: true` 防止误发布到 npm，不阻止 GitHub 安装。
+
+| 安装地址 | 发布要求与含义 |
+| --- | --- |
+| `github:TechEnergyGH/dsh-sandbox-mxc` | 使用远程默认分支当时的提交；默认分支可以不是 `main` |
+| `github:TechEnergyGH/dsh-sandbox-mxc#main` | 使用明确指定的远程 `main` 分支 |
+| `github:TechEnergyGH/dsh-sandbox-mxc#v0.2.0-local.5` | 必须先创建并推送这个 tag；不自动选择最新 Release |
+| `github:TechEnergyGH/dsh-sandbox-mxc#<40-character-commit-sha>` | 替换成远程已有的完整 40 位提交 SHA；适合固定安装来源 |
+
+创建并推送 tag 后，可向用户提供：
+
+```powershell
+dsh plugin --profile <your-profile> add "github:TechEnergyGH/dsh-sandbox-mxc#v0.2.0-local.5"
+```
+
+不要移动已经发布的 tag 来替换内容。默认分支和指定分支适合开发试用，固定 tag 或完整提交 SHA 更适合版本分发；安装后的副本不会因后续 GitHub 提交自动更新。每个安装来源仍须满足宿主的 DSH engine、Node 和平台要求，不能用版本豁免跳过适配。
+
+本地 `.tgz`、无后缀、分支、tag 和完整 SHA 的安装命令，以及 Desktop 退出/重启和构建脚本审批注意事项，见 [README 安装说明](../README.md)。已有 `.tgz` 验证结果不代表 `github:` 的下载和包准备链路也经过验收；发布前应分别验证实际提供的安装形式。
+
 Release Notes 应列出：
 
 1. 精确目标 DSH、SDK、Node 和实测 Windows/架构。
